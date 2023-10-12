@@ -69,19 +69,19 @@ class Switchable(Device):
 
 
 class Metering(Device):
-    def getEnergyUsage(self):
-        raise NotImplementedError()
+    def getEnergyUsage(self) -> dict:
+        return self.request("get_energy_usage")
 
 
 class Color(Device):
-    def setBrightness(self, brightness):
-        raise NotImplementedError()
+    def setBrightness(self, brightness: int):
+        return self._set_device_info({"brightness": brightness})
 
-    def setColorTemp(self, colortemp):
-        raise NotImplementedError()
+    def setColorTemp(self, color_temp: int):
+        return self._set_device_info({"color_temp": color_temp})
 
     def setColor(self, hue, saturation):
-        raise NotImplementedError()
+        return self._set_device_info({"color_temp": 0, "hue": hue, "saturation": saturation})
 
 
 class P100(Switchable):
