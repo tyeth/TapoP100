@@ -16,7 +16,7 @@ fork and enhance it.
 PyP100 can be installed using the package manager [pip](https://pip.pypa.io/en/stable/).
 
 ```bash
-  pip install git+https://github.com/almottier/TapoP100.git
+pip install git+https://github.com/almottier/TapoP100.git@main
 ```
 
 ## Usage
