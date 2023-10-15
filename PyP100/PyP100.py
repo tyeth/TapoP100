@@ -1,20 +1,33 @@
+import logging
 from base64 import b64decode
-from .auth_protocol import AuthProtocol
+from .auth_protocol import AuthProtocol, OldProtocol
+
+log = logging.getLogger(__name__)
 
 
 class Device:
-    def __init__(self, address, email, password):
+    def __init__(self, address, email, password, **kwargs):
         self.address = address
         self.email = email
         self.password = password
+        self.kwargs = kwargs
         self.protocol = None
 
     def _initialize(self):
-        try:
-            self.protocol = AuthProtocol(self.address, self.email, self.password)
-            self.protocol.Initialize()
-        except Exception as e:
-            raise Exception(f"Failed to initialize device: {e}")
+        for protocol_class in [AuthProtocol, OldProtocol]:
+            if not self.protocol:
+                try:
+                    protocol = protocol_class(
+                        self.address, self.email, self.password, **self.kwargs
+                    )
+                    protocol.Initialize()
+                    self.protocol = protocol
+                except:
+                    log.exception(
+                        f"Failed to initialize protocol {protocol_class.__name__}"
+                    )
+        if not self.protocol:
+            raise Exception("Failed to initialize protocol")
 
     def request(self, method: str, params: dict = None):
         if not self.protocol:
@@ -81,7 +94,9 @@ class Color(Device):
         return self._set_device_info({"color_temp": color_temp})
 
     def setColor(self, hue, saturation):
-        return self._set_device_info({"color_temp": 0, "hue": hue, "saturation": saturation})
+        return self._set_device_info(
+            {"color_temp": 0, "hue": hue, "saturation": saturation}
+        )
 
 
 class P100(Switchable):

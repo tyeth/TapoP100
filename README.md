@@ -3,8 +3,8 @@
 PyP100 is a Python library for controlling many of the TP-Link Tapo devices including the P100, P105, P110 plugs and the
 L530 and L510E bulbs.
 
-This fork is designed exclusively to support the new authentication method and is currently compatible with the P100
-version 1.2.1
+This fork is designed to support the new authentication method and is currently compatible with the P100
+version 1.2.1. It also supports the old authentication method.
 
 Most of the code originates from [OctoPrint-PSUControl-Tapo](https://github.com/dswd/OctoPrint-PSUControl-Tapo).
 
