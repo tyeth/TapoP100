@@ -75,10 +75,24 @@ class Switchable(Device):
         return self.set_status(not self.get_status())
 
     def turnOnWithDelay(self, delay):
-        raise NotImplementedError()
+        return self.request("add_countdown_rule", {
+				"delay": int(delay),
+				"desired_states": {
+					"on": True
+				},
+				"enable": True,
+				"remain": int(delay)
+			})
 
     def turnOffWithDelay(self, delay):
-        raise NotImplementedError()
+        return self.request("add_countdown_rule", {
+				"delay": int(delay),
+				"desired_states": {
+					"on": False
+				},
+				"enable": True,
+				"remain": int(delay)
+			})
 
 
 class Metering(Device):
