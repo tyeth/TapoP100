@@ -76,23 +76,23 @@ class Switchable(Device):
 
     def turnOnWithDelay(self, delay):
         return self.request("add_countdown_rule", {
-				"delay": int(delay),
-				"desired_states": {
-					"on": True
-				},
-				"enable": True,
-				"remain": int(delay)
-			})
+		"delay": int(delay),
+		"desired_states": {
+			"on": True
+		},
+		"enable": True,
+		"remain": int(delay)
+	})
 
     def turnOffWithDelay(self, delay):
         return self.request("add_countdown_rule", {
-				"delay": int(delay),
-				"desired_states": {
-					"on": False
-				},
-				"enable": True,
-				"remain": int(delay)
-			})
+		"delay": int(delay),
+		"desired_states": {
+			"on": False
+		},
+		"enable": True,
+		"remain": int(delay)
+	})
 
 
 class Metering(Device):
