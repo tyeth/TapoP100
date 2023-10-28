@@ -11,6 +11,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_v1_5
 import json
+import tempfile
 
 
 log = logging.getLogger(__name__)
@@ -122,7 +123,7 @@ class OldProtocol:
         address: str,
         username: str,
         password: str,
-        keypair_file: str = "/tmp/tapo.key",
+        keypair_file: str = f"/{tempfile.gettempdir()}/tapo.key",
     ):
         self.session = requests.Session()  # single session, stores cookie
         self.terminal_uuid = str(uuid.uuid4())

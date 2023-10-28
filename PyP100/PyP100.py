@@ -6,15 +6,24 @@ log = logging.getLogger(__name__)
 
 
 class Device:
-    def __init__(self, address, email, password, **kwargs):
+    def __init__(self, address, email, password, preferred_protocol=None, **kwargs):
         self.address = address
         self.email = email
         self.password = password
         self.kwargs = kwargs
         self.protocol = None
+        self.preferred_protocol = preferred_protocol
 
     def _initialize(self):
-        for protocol_class in [AuthProtocol, OldProtocol]:
+        protocol_classes = {"new": AuthProtocol, "old": OldProtocol}
+
+        # set preferred protocol if specified
+        if self.preferred_protocol and self.preferred_protocol in protocol_classes:
+            protocols_to_try = [protocol_classes[self.preferred_protocol]]
+        else:
+            protocols_to_try = list(protocol_classes.values())
+
+        for protocol_class in protocols_to_try:
             if not self.protocol:
                 try:
                     protocol = protocol_class(
@@ -75,24 +84,26 @@ class Switchable(Device):
         return self.set_status(not self.get_status())
 
     def turnOnWithDelay(self, delay):
-        return self.request("add_countdown_rule", {
-		"delay": int(delay),
-		"desired_states": {
-			"on": True
-		},
-		"enable": True,
-		"remain": int(delay)
-	})
+        return self.request(
+            "add_countdown_rule",
+            {
+                "delay": int(delay),
+                "desired_states": {"on": True},
+                "enable": True,
+                "remain": int(delay),
+            },
+        )
 
     def turnOffWithDelay(self, delay):
-        return self.request("add_countdown_rule", {
-		"delay": int(delay),
-		"desired_states": {
-			"on": False
-		},
-		"enable": True,
-		"remain": int(delay)
-	})
+        return self.request(
+            "add_countdown_rule",
+            {
+                "delay": int(delay),
+                "desired_states": {"on": False},
+                "enable": True,
+                "remain": int(delay),
+            },
+        )
 
 
 class Metering(Device):
