@@ -123,7 +123,7 @@ class OldProtocol:
         address: str,
         username: str,
         password: str,
-        keypair_file: str = f"/{tempfile.gettempdir()}/tapo.key",
+        keypair_file: str = os.path.join(tempfile.gettempdir(), "tapo.key"),
     ):
         self.session = requests.Session()  # single session, stores cookie
         self.terminal_uuid = str(uuid.uuid4())
