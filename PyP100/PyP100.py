@@ -66,6 +66,17 @@ class Device:
         name = b64decode(encodedName)
         return name.decode("utf-8")
 
+    def switch_with_delay(self, state, delay):
+        return self.request(
+            "add_countdown_rule",
+            {
+                "delay": int(delay),
+                "desired_states": {"on": state},
+                "enable": True,
+                "remain": int(delay),
+            },
+        )
+
 
 class Switchable(Device):
     def get_status(self) -> bool:
@@ -84,26 +95,10 @@ class Switchable(Device):
         return self.set_status(not self.get_status())
 
     def turnOnWithDelay(self, delay):
-        return self.request(
-            "add_countdown_rule",
-            {
-                "delay": int(delay),
-                "desired_states": {"on": True},
-                "enable": True,
-                "remain": int(delay),
-            },
-        )
+        return self.switch_with_delay(True, delay)
 
     def turnOffWithDelay(self, delay):
-        return self.request(
-            "add_countdown_rule",
-            {
-                "delay": int(delay),
-                "desired_states": {"on": False},
-                "enable": True,
-                "remain": int(delay),
-            },
-        )
+        return self.switch_with_delay(False, delay)
 
 
 class Metering(Device):

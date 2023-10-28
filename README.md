@@ -36,6 +36,18 @@ p100.handshake()  # DEPRECATED
 p100.login()  # DEPRECATED
 ```
 
+#### Old Authentication Method
+
+The old authentication method is used as a fallback if the new authentication method fails. It can be forced by setting
+the `preferred_protocol` parameter to "old" when creating the plug object.
+
+```python
+from PyP100 import PyP100
+
+p100 = PyP100.P100("192.168.X.X", "email@gmail.com", "Password123",
+                   preferred_protocol="old")  # Creates a P100 plug object using the old authentication method only
+```
+
 #### Bulbs - L530, L510E etc.
 
 ```python
