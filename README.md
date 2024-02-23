@@ -70,7 +70,10 @@ p110 = PyP110.P110("192.168.X.X", "email@gmail.com", "Password123")
 
 # The P110 has all the same basic functions as the plugs and additionally allow for energy monitoring.
 p110.getEnergyUsage()  # Returns dict with all of the energy usage of the connected plug
+p110.getEnergyData(1706825847, 1708643847, MeasureInterval.DAYS) # Returns power consumption per day since 1st Feb 24
 ```
+
+If you call `getEnergyData` function, power consumption could be collected per `HOURS`, `DAYS` or `MONTHS` interval. The start timestamp is ([most probably](https://github.com/fishbigger/TapoP100/pull/87#issuecomment-1565334341)) rounded to the midnight, the first day of month or the first of January based on interval.
 
 ## Contributing
 
