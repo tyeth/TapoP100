@@ -1,5 +1,8 @@
 import logging
 from base64 import b64decode
+
+from PyP100 import MeasureInterval
+
 from .auth_protocol import AuthProtocol, OldProtocol
 
 log = logging.getLogger(__name__)
@@ -33,7 +36,8 @@ class Device:
                     self.protocol = protocol
                 except:
                     log.exception(
-                        f"Failed to initialize protocol {protocol_class.__name__}"
+                        f"Failed to initialize protocol {
+                            protocol_class.__name__}"
                     )
         if not self.protocol:
             raise Exception("Failed to initialize protocol")
@@ -104,6 +108,10 @@ class Switchable(Device):
 class Metering(Device):
     def getEnergyUsage(self) -> dict:
         return self.request("get_energy_usage")
+
+    def getEnergyData(self, start_timestamp: int, end_timestamp: int, interval: MeasureInterval) -> dict:
+        """Hours are always ignored, start is rounded to midnight, first day of month or first of January based on interval"""
+        return self.request("get_energy_data", {"start_timestamp": start_timestamp, "end_timestamp": end_timestamp, "interval": interval.value})
 
 
 class Color(Device):
