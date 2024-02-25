@@ -36,8 +36,7 @@ class Device:
                     self.protocol = protocol
                 except:
                     log.exception(
-                        f"Failed to initialize protocol {
-                            protocol_class.__name__}"
+                        f"Failed to initialize protocol {protocol_class.__name__}"
                     )
         if not self.protocol:
             raise Exception("Failed to initialize protocol")
