@@ -63,6 +63,9 @@ class Device:
     def _set_device_info(self, params: dict):
         return self.request("set_device_info", params)
 
+    def getCountDownRules(self):
+        return self.request("get_countdown_rules")
+
     def getDeviceName(self):
         data = self.getDeviceInfo()
         encodedName = data["nickname"]

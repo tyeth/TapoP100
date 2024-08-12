@@ -31,6 +31,7 @@ p100.toggleState()  # Toggles the state of the connected plug
 
 p100.getDeviceInfo()  # Returns dict with all the device info of the connected plug
 p100.getDeviceName()  # Returns the name of the connected plug set in the app
+p100.getCountDownRules()  # Returns the countdown rule. Useful to check if you need to update them
 
 p100.handshake()  # DEPRECATED
 p100.login()  # DEPRECATED
@@ -84,4 +85,3 @@ Please submit a pull request or open an issue for any changes.
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
