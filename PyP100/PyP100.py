@@ -10,14 +10,15 @@ MeasureInterval.DAILY = MeasureInterval('daily')
 MeasureInterval.MONTHLY = MeasureInterval('monthly')
 
 # Import the AuthProtocol and OldProtocol classes from auth_protocol.py
-from auth_protocol import AuthProtocol, OldProtocol
+from .auth_protocol import AuthProtocol, OldProtocol
 
 class Device:
-    def __init__(self, address, email, password, preferred_protocol=None, **kwargs):
+    def __init__(self, address, email, password, preferred_protocol:str=None, radio:any=None, **kwargs):
         self.address = address
         self.email = email
         self.password = password
         self.kwargs = kwargs
+        self.radio = radio
         self.protocol = None
         self.preferred_protocol = preferred_protocol
 
@@ -34,7 +35,7 @@ class Device:
             if not self.protocol:
                 try:
                     protocol = protocol_class(
-                        self.address, self.email, self.password, **self.kwargs
+                        self.address, self.email, self.password, self.radio, **self.kwargs
                     )
                     protocol.Initialize()
                     self.protocol = protocol
