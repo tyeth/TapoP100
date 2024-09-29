@@ -6,24 +6,14 @@ import adafruit_requests as requests
 import adafruit_hashlib as hashlib
 import adafruit_rsa
 import aesio
+from adafruit_connection_manager import (
+    ConnectionManager,
+    get_radio_socketpool,
+    get_radio_ssl_context,
+)
 
-# Wi-Fi and networking imports
-import wifi
-import socketpool
-import ssl
-from secrets import secrets  # For Wi-Fi credentials
-
-# Connect to Wi-Fi
-print("Connecting to Wi-Fi...")
-wifi.radio.connect(secrets["ssid"], secrets["password"])
-print("Connected to Wi-Fi!")
-
-# Create a socket pool and SSL context
-pool = socketpool.SocketPool(wifi.radio)
-ssl_context = ssl.create_default_context()
-
-# Initialize the requests session
-session = requests.Session(pool, ssl_context)
+# Remove direct Wi-Fi and network setup imports
+# Wi-Fi and networking imports are now handled internally
 
 
 def sha1(data: bytes) -> bytes:
@@ -43,8 +33,16 @@ def get_random_bytes(length: int) -> bytes:
 
 
 class AuthProtocol:
-    def __init__(self, address: str, username: str, password: str):
-        self.session = session  # Use the initialized session
+    def __init__(self, address: str, username: str, password: str, radio=None):
+        self._radio = radio
+        if not self._radio:
+            try:
+                import wifi
+                self.radio=wifi.radio
+            except:
+                pass
+        if not self._radio:
+            raise Exception("radio argument error: Pass in a wifi.radio object or ESP_SPIcontrol or WIZNET5K")
         self.address = address
         self.username = username
         self.password = password
@@ -52,6 +50,16 @@ class AuthProtocol:
         self.iv = None
         self.seq = None
         self.sig = None
+        # Initialize connection manager
+        self._initialize_connection()
+
+    def _initialize_connection(self):
+        # Get the radio object and socket pool
+        socket_pool = get_radio_socketpool(self._radio)
+        ssl_context = get_radio_ssl_context(self._radio)
+        # Create a connection manager and requests session
+        self.connection_manager = ConnectionManager(socket_pool)
+        self.session = requests.Session(socket_pool, ssl_context)
 
     def calc_auth_hash(self, username: str, password: str) -> bytes:
         return sha256(sha1(username.encode()) + sha1(password.encode()))
@@ -67,6 +75,8 @@ class AuthProtocol:
         resp = self.session.post(url, data=data, headers=headers, timeout=2)
         resp.raise_for_status()
         data = resp.content
+        # Close the socket after use
+        resp.close()
         return data
 
     def _request(self, method: str, params: dict = None):
@@ -157,18 +167,36 @@ class AuthProtocol:
 
 
 class OldProtocol:
-    def __init__(self, address: str, username: str, password: str):
-        self.session = session  # Use the initialized session
-        # Generate a random UUID-like string
-        self.terminal_uuid = ''.join('%02x' % b for b in os.urandom(16))
+    def __init__(self, address: str, username: str, password: str, radio=None):
+        self._radio = radio
+        if not self._radio:
+            try:
+                import wifi
+                self.radio=wifi.radio
+            except:
+                pass
+        if not self._radio:
+            raise Exception("radio argument error: Pass in a wifi.radio object or ESP_SPIcontrol or WIZNET5K")
         self.address = address
         self.username = username
         self.password = password
+        # Initialize connection manager
+        self._initialize_connection()
+        # Generate a random UUID-like string
+        self.terminal_uuid = ''.join('%02x' % b for b in os.urandom(16))
         # Generate RSA keypair using adafruit_rsa
         self._create_keypair()
         self.key = None
         self.iv = None
         self.token = None
+
+    def _initialize_connection(self):
+        # Get the radio object and socket pool
+        socket_pool = get_radio_socketpool(self._radio)
+        ssl_context = get_radio_ssl_context(self._radio)
+        # Create a connection manager and requests session
+        self.connection_manager = ConnectionManager(socket_pool)
+        self.session = requests.Session(socket_pool, ssl_context)
 
     def _create_keypair(self):
         # Generate a new RSA keypair
@@ -195,6 +223,8 @@ class OldProtocol:
         resp = self.session.post(url, json=payload, timeout=2)
         resp.raise_for_status()
         data = resp.json()
+        # Close the socket after use
+        resp.close()
 
         # Check error code and get result
         if data["error_code"] != 0:
