@@ -1,12 +1,16 @@
-import logging
-from base64 import b64decode
+import binascii
 
-from PyP100 import MeasureInterval
+# Define MeasureInterval since CircuitPython doesn't have the enum module
+class MeasureInterval:
+    def __init__(self, value):
+        self.value = value
 
-from .auth_protocol import AuthProtocol, OldProtocol
+MeasureInterval.HOURLY = MeasureInterval('hourly')
+MeasureInterval.DAILY = MeasureInterval('daily')
+MeasureInterval.MONTHLY = MeasureInterval('monthly')
 
-log = logging.getLogger(__name__)
-
+# Import the AuthProtocol and OldProtocol classes from auth_protocol.py
+from auth_protocol import AuthProtocol, OldProtocol
 
 class Device:
     def __init__(self, address, email, password, preferred_protocol=None, **kwargs):
@@ -20,7 +24,7 @@ class Device:
     def _initialize(self):
         protocol_classes = {"new": AuthProtocol, "old": OldProtocol}
 
-        # set preferred protocol if specified
+        # Set preferred protocol if specified
         if self.preferred_protocol and self.preferred_protocol in protocol_classes:
             protocols_to_try = [protocol_classes[self.preferred_protocol]]
         else:
@@ -34,14 +38,14 @@ class Device:
                     )
                     protocol.Initialize()
                     self.protocol = protocol
-                except:
-                    log.exception(
-                        f"Failed to initialize protocol {protocol_class.__name__}"
+                except Exception as e:
+                    print(
+                        f"Failed to initialize protocol {protocol_class.__name__}: {e}"
                     )
         if not self.protocol:
             raise Exception("Failed to initialize protocol")
 
-    def request(self, method: str, params: dict = None):
+    def request(self, method, params=None):
         if not self.protocol:
             self._initialize()
         return self.protocol._request(method, params)
@@ -60,7 +64,7 @@ class Device:
     def _get_device_info(self):
         return self.request("get_device_info")
 
-    def _set_device_info(self, params: dict):
+    def _set_device_info(self, params):
         return self.request("set_device_info", params)
 
     def getCountDownRules(self):
@@ -69,8 +73,10 @@ class Device:
     def getDeviceName(self):
         data = self.getDeviceInfo()
         encodedName = data["nickname"]
-        name = b64decode(encodedName)
-        return name.decode("utf-8")
+        # Decode base64 encoded name using binascii
+        name_bytes = binascii.a2b_base64(encodedName.encode('utf-8'))
+        name = name_bytes.decode("utf-8")
+        return name
 
     def switch_with_delay(self, state, delay):
         return self.request(
@@ -83,12 +89,11 @@ class Device:
             },
         )
 
-
 class Switchable(Device):
-    def get_status(self) -> bool:
+    def get_status(self):
         return self._get_device_info()["device_on"]
 
-    def set_status(self, status: bool):
+    def set_status(self, status):
         return self._set_device_info({"device_on": status})
 
     def turnOn(self):
@@ -98,7 +103,8 @@ class Switchable(Device):
         return self.set_status(False)
 
     def toggleState(self):
-        return self.set_status(not self.get_status())
+        current_status = self.get_status()
+        return self.set_status(not current_status)
 
     def turnOnWithDelay(self, delay):
         return self.switch_with_delay(True, delay)
@@ -106,28 +112,32 @@ class Switchable(Device):
     def turnOffWithDelay(self, delay):
         return self.switch_with_delay(False, delay)
 
-
 class Metering(Device):
-    def getEnergyUsage(self) -> dict:
+    def getEnergyUsage(self):
         return self.request("get_energy_usage")
 
-    def getEnergyData(self, start_timestamp: int, end_timestamp: int, interval: MeasureInterval) -> dict:
-        """Hours are always ignored, start is rounded to midnight, first day of month or first of January based on interval"""
-        return self.request("get_energy_data", {"start_timestamp": start_timestamp, "end_timestamp": end_timestamp, "interval": interval.value})
-
+    def getEnergyData(self, start_timestamp, end_timestamp, interval):
+        """Retrieve energy data within the specified time range and interval."""
+        return self.request(
+            "get_energy_data",
+            {
+                "start_timestamp": start_timestamp,
+                "end_timestamp": end_timestamp,
+                "interval": interval.value,
+            },
+        )
 
 class Color(Device):
-    def setBrightness(self, brightness: int):
+    def setBrightness(self, brightness):
         return self._set_device_info({"brightness": brightness})
 
-    def setColorTemp(self, color_temp: int):
+    def setColorTemp(self, color_temp):
         return self._set_device_info({"color_temp": color_temp})
 
     def setColor(self, hue, saturation):
         return self._set_device_info(
             {"color_temp": 0, "hue": hue, "saturation": saturation}
         )
-
 
 class P100(Switchable):
     pass
