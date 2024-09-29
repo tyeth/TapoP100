@@ -1,6 +1,6 @@
 from adafruit_connection_manager import ConnectionManager
 
-from PyP100 import P100
+from PyP100 import P110
 
 import wifi
 radio = wifi.radio  # or supply in a ESP_SPIcontrol or WIZNET5K
@@ -15,16 +15,16 @@ address = "192.168.50.173"
 email = "your_email@example.com"
 password = "your_password"
 
-# Create an instance of the P100 device
-p100 = P100(address, email, password, radio)
+# Create an instance of the P110 device
+p110 = P110(address, email, password, radio)
 
 # Turn on the device
-p100.turnOn()
+p110.turnOn()
 
 # Get device information
-device_info = p100.getDeviceInfo()
+device_info = p110.getDeviceInfo()
 print("Device Info:", device_info)
 
 # Get the device name
-device_name = p100.getDeviceName()
+device_name = p110.getDeviceName()
 print("Device Name:", device_name)
