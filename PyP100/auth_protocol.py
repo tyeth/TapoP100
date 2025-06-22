@@ -1,6 +1,7 @@
 import time
 import json
 import os
+import gc
 import adafruit_binascii as binascii
 import adafruit_requests as requests
 import adafruit_hashlib as hashlib
@@ -232,8 +233,9 @@ class OldProtocol:
 
     def _create_keypair(self):
         # Generate a new RSA keypair
+        gc.collect()  # Collect garbage before generating keys
         print("Generating RSA keypair...")
-        (self.pub_key, self.priv_key) = adafruit_rsa.newkeys(1024)
+        (self.pub_key, self.priv_key) = adafruit_rsa.newkeys(1024, log_level="DEBUG")
         print("RSA keypair generated.")
 
     def _request_raw(self, method: str, params: dict = None):
@@ -257,8 +259,8 @@ class OldProtocol:
         resp = self.session.post(url, json=payload, timeout=10)
         print(f"Response status: {resp.status_code}")
         print(f"Response headers: {json.dumps(resp.headers)}")
-        print(f"Response text: {resp.text}")
-        print(f"Response content: {resp.content}")
+        # print(f"Response text: {resp.text}")
+        # print(f"Response content: {resp.content}")
         # CircuitPython doesn't have resp.raise_for_status(), so use custom function
         raise_for_status(resp)
         data = resp.json()
@@ -360,17 +362,18 @@ class OldProtocol:
 
         # Send public key and receive encrypted symmetric key
         print("Preparing public key...")
+        gc.collect()
         public_key_pem = adafruit_rsa.pem.save_pem(
             self.pub_key.save_pkcs1(),
             "PUBLIC KEY",
         ).decode("UTF-8")
-
+        gc.collect()
         # Remove headers and footers for proper formatting
         public_key_pem = public_key_pem.replace("-----BEGIN PUBLIC KEY-----\n", "")
         public_key_pem = public_key_pem.replace("-----END PUBLIC KEY-----\n", "")
         public_key_pem = public_key_pem.replace("\n", "")
         print(f"Public Key PEM: {public_key_pem}")
-
+        gc.collect()
         result = self._request_raw("handshake", {"key": public_key_pem})
         encrypted_key_b64 = result["key"]
         print(f"Received encrypted key (base64): {encrypted_key_b64}")
@@ -409,9 +412,9 @@ class OldProtocol:
 # Usage example
 if __name__ == "__main__":
     # Replace with your device's address, username, and password
-    address = "192.168.1.100"
-    username = "admin"
-    password = "your_password"
+    address = "192.168.1.161"
+    username = os.getenv("TAPO_USER")
+    password = os.getenv("TAPO_KEY")
 
     # Choose the protocol you need
     auth = AuthProtocol(address, username, password)

@@ -34,7 +34,7 @@ email = os.getenv("TAPO_USER")
 password = os.getenv("TAPO_KEY")
 
 # Create an instance of the P110 device
-p110 = P110(address, email, password, "new", radio=radio)
+p110 = P110(address, email, password, "old", radio=radio)
 print("P110 created")
 
 print("Printing device info...")
