@@ -1,4 +1,4 @@
-import binascii
+import adafruit_binascii as binascii
 
 # Define MeasureInterval since CircuitPython doesn't have the enum module
 class MeasureInterval:

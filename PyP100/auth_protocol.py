@@ -1,7 +1,7 @@
 import time
 import json
 import os
-import binascii
+import adafruit_binascii as binascii
 import adafruit_requests as requests
 import adafruit_hashlib as hashlib
 import adafruit_rsa
